@@ -38,7 +38,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.Book"
+                                "$ref": "#/definitions/models.Book"
                             }
                         }
                     }
@@ -63,7 +63,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     }
                 ],
@@ -71,7 +71,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "400": {
@@ -109,7 +109,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "404": {
@@ -149,7 +149,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     }
                 ],
@@ -157,7 +157,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "400": {
@@ -204,14 +204,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.Book": {
+        "models.Book": {
             "type": "object",
             "properties": {
                 "author": {
                     "type": "string"
                 },
                 "color": {
-                    "$ref": "#/definitions/main.Color"
+                    "$ref": "#/definitions/models.Color"
                 },
                 "id": {
                     "type": "integer"
@@ -224,7 +224,7 @@ const docTemplate = `{
                 }
             }
         },
-        "main.Color": {
+        "models.Color": {
             "type": "string",
             "enum": [
                 "Red",

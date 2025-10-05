@@ -1,11 +1,11 @@
 basePath: /
 definitions:
-  main.Book:
+  models.Book:
     properties:
       author:
         type: string
       color:
-        $ref: '#/definitions/main.Color'
+        $ref: '#/definitions/models.Color'
       id:
         type: integer
       pages:
@@ -13,7 +13,7 @@ definitions:
       title:
         type: string
     type: object
-  main.Color:
+  models.Color:
     enum:
     - Red
     - Green
@@ -45,7 +45,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.Book'
+              $ref: '#/definitions/models.Book'
             type: array
       summary: List all books
       tags:
@@ -60,14 +60,14 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/main.Book'
+          $ref: '#/definitions/models.Book'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.Book'
+            $ref: '#/definitions/models.Book'
         "400":
           description: Bad Request
           schema:
@@ -112,7 +112,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Book'
+            $ref: '#/definitions/models.Book'
         "404":
           description: Not Found
           schema:
@@ -137,14 +137,14 @@ paths:
         name: book
         required: true
         schema:
-          $ref: '#/definitions/main.Book'
+          $ref: '#/definitions/models.Book'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Book'
+            $ref: '#/definitions/models.Book'
         "400":
           description: Bad Request
           schema:

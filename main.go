@@ -12,9 +12,13 @@ package main
 
 import (
 	"log"
-	"net/http"
+	"os"
 
-	_ "books-api/docs" // 👈 replace with your module name
+	_ "books-api/docs"
+	"books-api/app/controller"
+	"books-api/app/migrations"
+	"books-api/app/repository"
+	"books-api/app/service"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -23,146 +27,70 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
-
-func initDB() {
-	var err error
-	db, err = gorm.Open(sqlite.Open("books.db"), &gorm.Config{})
-	if err != nil {
-		log.Fatal("failed to connect database")
-	}
-
-	// Auto-migrate creates table 'books'
-	if err := db.AutoMigrate(&Book{}); err != nil {
-		log.Fatal("failed to migrate database")
-	}
-}
-
-// createBook godoc
-// @Summary      Create a new book
-// @Description  Adds a new book to the database
-// @Tags         books
-// @Accept       json
-// @Produce      json
-// @Param        book body Book true "Book data"
-// @Success      201 {object} Book
-// @Failure      400 {object} map[string]string
-// @Router       /books [post]
-func createBook(c *gin.Context) {
-	var book Book
-	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if book.Color != nil && !book.Color.IsValid() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid color"})
-		return
-	}
-	if err := db.Create(&book).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusCreated, book)
-}
-
-// listBooks godoc
-// @Summary      List all books
-// @Description  Get all books
-// @Tags         books
-// @Produce      json
-// @Success      200 {array} Book
-// @Router       /books [get]
-func listBooks(c *gin.Context) {
-	var books []Book
-	db.Find(&books)
-	c.JSON(http.StatusOK, books)
-}
-
-// getBook godoc
-// @Summary      Get a book by ID
-// @Description  Returns a single book
-// @Tags         books
-// @Produce      json
-// @Param        id path int true "Book ID"
-// @Success      200 {object} Book
-// @Failure      404 {object} map[string]string
-// @Router       /books/{id} [get]
-func getBook(c *gin.Context) {
-	var book Book
-	if err := db.First(&book, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
-		return
-	}
-	c.JSON(http.StatusOK, book)
-}
-
-// updateBook godoc
-// @Summary      Update a book
-// @Description  Updates book fields by ID
-// @Tags         books
-// @Accept       json
-// @Produce      json
-// @Param        id path int true "Book ID"
-// @Param        book body Book true "Book data"
-// @Success      200 {object} Book
-// @Failure      400 {object} map[string]string
-// @Router       /books/{id} [put]
-func updateBook(c *gin.Context) {
-	var book Book
-	if err := db.First(&book, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
-		return
-	}
-
-	var input Book
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if input.Color != nil && !input.Color.IsValid() {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid color"})
-		return
-	}
-
-	// Use a helper method to update fields
-	book.Update(input)
-
-	if err := db.Save(&book).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, book)
-}
-
-// deleteBook godoc
-// @Summary      Delete a book
-// @Description  Deletes a book by ID
-// @Tags         books
-// @Produce      json
-// @Param        id path int true "Book ID"
-// @Success      200 {object} map[string]string
-// @Router       /books/{id} [delete]
-func deleteBook(c *gin.Context) {
-	if err := db.Delete(&Book{}, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"message": "deleted"})
-}
-
 func main() {
-	initDB()
+	// Initialize database connection
+	db, err := initDB()
+	if err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
 
+	// Run migrations
+	migrationManager := migrations.NewMigrationManager()
+	if err := migrationManager.RunMigrations(db); err != nil {
+		log.Fatal("Failed to run migrations:", err)
+	}
+
+	// Initialize layers
+	bookRepo := repository.NewBookRepository(db)
+	bookService := service.NewBookService(bookRepo)
+	bookController := controller.NewBookController(bookService)
+
+	// Initialize Gin router
 	r := gin.Default()
 
+	// Setup routes
+	setupRoutes(r, bookController)
+
+	// Get port from environment variable or default to 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	// Start server
+	log.Printf("Starting server on :%s", port)
+	if err := r.Run(":" + port); err != nil {
+		log.Fatal("Failed to start server:", err)
+	}
+}
+
+// initDB initializes the database connection
+func initDB() (*gorm.DB, error) {
+	log.Println("Initializing database connection...")
+	
+	db, err := gorm.Open(sqlite.Open("books.db"), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Database connection established successfully")
+	return db, nil
+}
+
+// setupRoutes configures all the API routes
+func setupRoutes(r *gin.Engine, bookController *controller.BookController) {
 	// Swagger endpoint
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	r.POST("/books", createBook)
-	r.GET("/books", listBooks)
-	r.GET("/books/:id", getBook)
-	r.PUT("/books/:id", updateBook)
-	r.DELETE("/books/:id", deleteBook)
+	// Book routes
+	bookRoutes := r.Group("/books")
+	{
+		bookRoutes.POST("", bookController.CreateBook)
+		bookRoutes.GET("", bookController.ListBooks)
+		bookRoutes.GET("/:id", bookController.GetBook)
+		bookRoutes.PUT("/:id", bookController.UpdateBook)
+		bookRoutes.DELETE("/:id", bookController.DeleteBook)
+	}
 
-	r.Run(":8080")
+	log.Println("Routes configured successfully")
 }

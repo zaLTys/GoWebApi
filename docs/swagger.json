@@ -32,7 +32,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.Book"
+                                "$ref": "#/definitions/models.Book"
                             }
                         }
                     }
@@ -57,7 +57,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     }
                 ],
@@ -65,7 +65,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "400": {
@@ -103,7 +103,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "404": {
@@ -143,7 +143,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     }
                 ],
@@ -151,7 +151,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.Book"
+                            "$ref": "#/definitions/models.Book"
                         }
                     },
                     "400": {
@@ -198,14 +198,14 @@
         }
     },
     "definitions": {
-        "main.Book": {
+        "models.Book": {
             "type": "object",
             "properties": {
                 "author": {
                     "type": "string"
                 },
                 "color": {
-                    "$ref": "#/definitions/main.Color"
+                    "$ref": "#/definitions/models.Color"
                 },
                 "id": {
                     "type": "integer"
@@ -218,7 +218,7 @@
                 }
             }
         },
-        "main.Color": {
+        "models.Color": {
             "type": "string",
             "enum": [
                 "Red",

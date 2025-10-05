@@ -1,0 +1,157 @@
+basePath: /
+definitions:
+  main.Book:
+    properties:
+      author:
+        type: string
+      color:
+        $ref: '#/definitions/main.Color'
+      id:
+        type: integer
+      pages:
+        type: integer
+      title:
+        type: string
+    type: object
+  main.Color:
+    enum:
+    - Red
+    - Green
+    - Blue
+    type: string
+    x-enum-varnames:
+    - Red
+    - Green
+    - Blue
+host: localhost:8080
+info:
+  contact:
+    email: you@example.com
+    name: API Support
+  description: Example API with Gin, GORM, and Swagger docs.
+  license:
+    name: MIT
+  termsOfService: http://swagger.io/terms/
+  title: Books API
+  version: "1.0"
+paths:
+  /books:
+    get:
+      description: Get all books
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Book'
+            type: array
+      summary: List all books
+      tags:
+      - books
+    post:
+      consumes:
+      - application/json
+      description: Adds a new book to the database
+      parameters:
+      - description: Book data
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.Book'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Book'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new book
+      tags:
+      - books
+  /books/{id}:
+    delete:
+      description: Deletes a book by ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a book
+      tags:
+      - books
+    get:
+      description: Returns a single book
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Book'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a book by ID
+      tags:
+      - books
+    put:
+      consumes:
+      - application/json
+      description: Updates book fields by ID
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book data
+        in: body
+        name: book
+        required: true
+        schema:
+          $ref: '#/definitions/main.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Book'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a book
+      tags:
+      - books
+swagger: "2.0"
